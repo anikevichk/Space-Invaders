@@ -14,16 +14,30 @@ find_path(Stb_INCLUDE_DIR NAMES stb_image.h)
 
 add_executable(SpaceInvaders
         main.cpp
-        src/Shader.cpp
-        src/ObjLoader.cpp
-        src/Texture.cpp
-        src/Mesh.cpp
-        src/Input.cpp
+
+        src/core/Game.cpp
+        src/core/Input.cpp
+
+        src/entities/Player.cpp
+
+        src/systems/BulletSystem.cpp
+        src/systems/Starfield.cpp
+
+        src/graphics/Camera.cpp
+        src/graphics/Shader.cpp
+        src/graphics/Texture.cpp
+        src/graphics/Mesh.cpp
+
+        src/loaders/ObjLoader.cpp
 )
 
 target_include_directories(SpaceInvaders
         PRIVATE
-        src
+        src/core
+        src/entities
+        src/systems
+        src/graphics
+        src/loaders
         ${Stb_INCLUDE_DIR}
 )
 
