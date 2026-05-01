@@ -22,6 +22,7 @@ add_executable(SpaceInvaders
 
         src/systems/BulletSystem.cpp
         src/systems/Starfield.cpp
+        src/systems/ShelterSystem.cpp
 
         src/graphics/Camera.cpp
         src/graphics/Shader.cpp

@@ -6,6 +6,7 @@
 #include <glm/glm.hpp>
 
 #include <vector>
+class ShelterSystem;
 
 struct Bullet {
     glm::vec3 position;
@@ -16,7 +17,12 @@ struct Bullet {
 class BulletSystem {
 public:
     bool init();
-    void update(GLFWwindow* window, float deltaTime, const glm::mat4& playerModel);
+    void update(
+    GLFWwindow* window,
+    float deltaTime,
+    const glm::mat4& playerModel,
+    ShelterSystem* shelterSystem
+    );
     void draw(const glm::mat4& view, const glm::mat4& projection);
     void cleanup();
 

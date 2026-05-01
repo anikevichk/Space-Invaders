@@ -66,14 +66,19 @@ bool Player::init() {
     return true;
 }
 
-void Player::updateInput(GLFWwindow* window, float deltaTime) {
-    processInput(window, deltaTime, x);
+void Player::updateInput(
+    GLFWwindow* window,
+    float deltaTime,
+    float minX,
+    float maxX
+) {
+    processInput(window, deltaTime, x, minX, maxX);
 }
 
 glm::mat4 Player::getModelMatrix() const {
     glm::mat4 model = glm::mat4(1.0f);
 
-    model = glm::translate(model, glm::vec3(x, -1.2f, 0.0f));
+    model = glm::translate(model, glm::vec3(x, -2.25f, 0.0f));
 
     model = glm::rotate(
         model,
@@ -81,7 +86,7 @@ glm::mat4 Player::getModelMatrix() const {
         glm::vec3(1.0f, 0.0f, 0.0f)
     );
 
-    model = glm::scale(model, glm::vec3(0.45f));
+    model = glm::scale(model, glm::vec3(0.30f));
 
     return model;
 }

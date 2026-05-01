@@ -6,6 +6,7 @@
 #include <iostream>
 
 #include "Shader.h"
+#include "ShelterSystem.h"
 
 bool BulletSystem::init() {
     bulletShader = createShaderProgram(
@@ -51,7 +52,8 @@ bool BulletSystem::init() {
 void BulletSystem::update(
     GLFWwindow* window,
     float deltaTime,
-    const glm::mat4& playerModel
+    const glm::mat4& playerModel,
+    ShelterSystem* shelterSystem
 ) {
     shootCooldown -= deltaTime;
 
@@ -87,13 +89,28 @@ void BulletSystem::update(
         std::remove_if(
             bullets.begin(),
             bullets.end(),
-            [](const Bullet& bullet) {
-                return bullet.position.x < -10.0f ||
-                       bullet.position.x >  10.0f ||
-                       bullet.position.y < -10.0f ||
-                       bullet.position.y >  10.0f ||
-                       bullet.position.z < -15.0f ||
-                       bullet.position.z >  15.0f;
+            [shelterSystem](const Bullet& bullet) {
+                glm::vec3 bulletStart = bullet.position - bullet.direction * 0.45f;
+                glm::vec3 bulletEnd = bullet.position + bullet.direction * 0.45f;
+
+                bool hitShelter = false;
+
+                if (shelterSystem != nullptr) {
+                    hitShelter = shelterSystem->hitByBullet(
+                        bulletStart,
+                        bulletEnd
+                    );
+                }
+
+                bool outOfBounds =
+                    bullet.position.x < -10.0f ||
+                    bullet.position.x >  10.0f ||
+                    bullet.position.y < -10.0f ||
+                    bullet.position.y >  10.0f ||
+                    bullet.position.z < -15.0f ||
+                    bullet.position.z >  15.0f;
+
+                return hitShelter || outOfBounds;
             }
         ),
         bullets.end()

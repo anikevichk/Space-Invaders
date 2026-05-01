@@ -7,6 +7,7 @@
 #include "BulletSystem.h"
 #include "Camera.h"
 #include "Starfield.h"
+#include "ShelterSystem.h"
 
 class Game {
 public:
@@ -17,13 +18,15 @@ public:
 private:
     GLFWwindow* window = nullptr;
 
-    const int width = 800;
-    const int height = 600;
+    int width = 800;
+    int height = 600;
 
     Player player;
     BulletSystem bulletSystem;
     Starfield starfield;
+    ShelterSystem shelterSystem;
     Camera camera = Camera(800.0f, 600.0f);
 
     float lastTime = 0.0f;
+    void updateViewport();
 };

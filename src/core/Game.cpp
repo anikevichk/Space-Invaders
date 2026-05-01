@@ -28,6 +28,20 @@ bool Game::init() {
 
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1);
+    glfwSetWindowUserPointer(window, this);
+
+    glfwSetFramebufferSizeCallback(
+        window,
+        [](GLFWwindow* window, int newWidth, int newHeight) {
+            Game* game = static_cast<Game*>(glfwGetWindowUserPointer(window));
+
+            if (game != nullptr) {
+                game->width = newWidth;
+                game->height = newHeight;
+                game->updateViewport();
+            }
+        }
+    );
 
     glewExperimental = GL_TRUE;
 
@@ -38,7 +52,7 @@ bool Game::init() {
         return false;
     }
 
-    glViewport(0, 0, width, height);
+    updateViewport();
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_PROGRAM_POINT_SIZE);
 
@@ -57,6 +71,10 @@ bool Game::init() {
         return false;
     }
 
+    if (!shelterSystem.init()) {
+    std::cout << "Failed to initialize shelter system\n";
+    return false;
+}
     return true;
 }
 
@@ -66,11 +84,16 @@ void Game::run() {
         float deltaTime = currentTime - lastTime;
         lastTime = currentTime;
 
-        player.updateInput(window, deltaTime);
+        player.updateInput(
+            window,
+            deltaTime,
+            camera.getPlayerMinX(),
+            camera.getPlayerMaxX()
+        );
 
         glm::mat4 playerModel = player.getModelMatrix();
 
-        bulletSystem.update(window, deltaTime, playerModel);
+        bulletSystem.update(window, deltaTime, playerModel, &shelterSystem);
 
         glClearColor(0.03f, 0.03f, 0.08f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -79,6 +102,7 @@ void Game::run() {
         glm::mat4 projection = camera.getProjectionMatrix();
 
         starfield.draw(view, projection);
+        shelterSystem.draw(view, projection);
         player.draw(view, projection);
         bulletSystem.draw(view, projection);
 
@@ -88,6 +112,7 @@ void Game::run() {
 }
 
 void Game::cleanup() {
+    shelterSystem.cleanup();
     bulletSystem.cleanup();
     player.cleanup();
     starfield.cleanup();
@@ -98,4 +123,13 @@ void Game::cleanup() {
     }
 
     glfwTerminate();
+}
+
+void Game::updateViewport() {
+    if (height <= 0) {
+        height = 1;
+    }
+
+    glViewport(0, 0, width, height);
+    camera.setSize(static_cast<float>(width), static_cast<float>(height));
 }

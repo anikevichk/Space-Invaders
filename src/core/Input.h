@@ -2,4 +2,4 @@
 
 #include <GLFW/glfw3.h>
 
-void processInput(GLFWwindow* window, float deltaTime, float& playerX);
+void processInput(GLFWwindow* window, float deltaTime, float& playerX, float minX, float maxX);

@@ -10,7 +10,7 @@
 class Player {
 public:
     bool init();
-    void updateInput(GLFWwindow* window, float deltaTime);
+    void updateInput(GLFWwindow* window, float deltaTime, float minX, float maxX);
     void draw(const glm::mat4& view, const glm::mat4& projection);
     void cleanup();
 
