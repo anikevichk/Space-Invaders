@@ -1,16 +1,5 @@
-﻿//
-// Created by Katarzyna on 5/1/2026.
-//
+﻿#pragma once
 
-#ifndef INPUT_H
-#define INPUT_H
+#include <GLFW/glfw3.h>
 
-
-
-class Input {
-
-};
-
-
-
-#endif //INPUT_H
+void processInput(GLFWwindow* window, float deltaTime, float& playerX);

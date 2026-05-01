@@ -1,16 +1,16 @@
-﻿//
-// Created by Katarzyna on 5/1/2026.
-//
+﻿#pragma once
 
-#ifndef OBJLOADER_H
-#define OBJLOADER_H
+#include <glm/glm.hpp>
+#include <vector>
+#include <string>
 
-
-
-class ObjLoader {
-
+struct Vertex {
+    glm::vec3 position;
+    glm::vec3 normal;
+    glm::vec2 texCoord;
 };
 
-
-
-#endif //OBJLOADER_H
+std::vector<Vertex> loadObjModel(
+    const std::string& path,
+    const std::string& mtlSearchPath
+);

@@ -1,16 +1,6 @@
-﻿//
-// Created by Katarzyna on 5/1/2026.
-//
+﻿#pragma once
 
-#ifndef SHADER_H
-#define SHADER_H
+#include <GL/glew.h>
+#include <string>
 
-
-
-class Shader {
-
-};
-
-
-
-#endif //SHADER_H
+GLuint createShaderProgram(const std::string& vertexPath, const std::string& fragmentPath);

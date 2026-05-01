@@ -1,16 +1,15 @@
-﻿//
-// Created by Katarzyna on 5/1/2026.
-//
+﻿#pragma once
 
-#ifndef MESH_H
-#define MESH_H
+#include <GL/glew.h>
+#include <vector>
+#include "ObjLoader.h"
 
-
-
-class Mesh {
-
+struct Mesh {
+    GLuint vao = 0;
+    GLuint vbo = 0;
+    GLsizei vertexCount = 0;
 };
 
-
-
-#endif //MESH_H
+Mesh createShipMesh(const std::vector<Vertex>& vertices);
+Mesh createPointMesh(const float* points, size_t floatCount);
+void destroyMesh(Mesh& mesh);

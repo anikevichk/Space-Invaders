@@ -1,5 +1,19 @@
-﻿//
-// Created by Katarzyna on 5/1/2026.
-//
+﻿#include "Input.h"
 
-#include "Input.h"
+void processInput(GLFWwindow* window, float deltaTime, float& playerX) {
+    const float speed = 3.0f;
+
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS ||
+        glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+        playerX -= speed * deltaTime;
+
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS ||
+        glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+        playerX += speed * deltaTime;
+
+    if (playerX < -2.2f) playerX = -2.2f;
+    if (playerX >  2.2f) playerX =  2.2;
+}

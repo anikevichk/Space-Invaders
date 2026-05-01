@@ -1,16 +1,6 @@
-﻿//
-// Created by Katarzyna on 5/1/2026.
-//
+﻿#pragma once
 
-#ifndef TEXTURE_H
-#define TEXTURE_H
+#include <GL/glew.h>
+#include <string>
 
-
-
-class Texture {
-
-};
-
-
-
-#endif //TEXTURE_H
+GLuint loadTexture(const std::string& path);
