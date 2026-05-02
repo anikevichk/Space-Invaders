@@ -19,47 +19,53 @@ bool ShelterSystem::init() {
     }
 
     float cubeVertices[] = {
-        -0.5f, -0.5f,  0.5f,
-         0.5f, -0.5f,  0.5f,
-         0.5f,  0.5f,  0.5f,
-         0.5f,  0.5f,  0.5f,
-        -0.5f,  0.5f,  0.5f,
-        -0.5f, -0.5f,  0.5f,
+        // front
+        -0.5f, -0.5f,  0.5f,   0.0f,  0.0f,  1.0f,
+        0.5f, -0.5f,  0.5f,   0.0f,  0.0f,  1.0f,
+        0.5f,  0.5f,  0.5f,   0.0f,  0.0f,  1.0f,
+        0.5f,  0.5f,  0.5f,   0.0f,  0.0f,  1.0f,
+        -0.5f,  0.5f,  0.5f,   0.0f,  0.0f,  1.0f,
+        -0.5f, -0.5f,  0.5f,   0.0f,  0.0f,  1.0f,
 
-        -0.5f, -0.5f, -0.5f,
-        -0.5f,  0.5f, -0.5f,
-         0.5f,  0.5f, -0.5f,
-         0.5f,  0.5f, -0.5f,
-         0.5f, -0.5f, -0.5f,
-        -0.5f, -0.5f, -0.5f,
+        // back
+        -0.5f, -0.5f, -0.5f,   0.0f,  0.0f, -1.0f,
+        -0.5f,  0.5f, -0.5f,   0.0f,  0.0f, -1.0f,
+        0.5f,  0.5f, -0.5f,   0.0f,  0.0f, -1.0f,
+        0.5f,  0.5f, -0.5f,   0.0f,  0.0f, -1.0f,
+        0.5f, -0.5f, -0.5f,   0.0f,  0.0f, -1.0f,
+        -0.5f, -0.5f, -0.5f,   0.0f,  0.0f, -1.0f,
 
-        -0.5f,  0.5f,  0.5f,
-        -0.5f,  0.5f, -0.5f,
-        -0.5f, -0.5f, -0.5f,
-        -0.5f, -0.5f, -0.5f,
-        -0.5f, -0.5f,  0.5f,
-        -0.5f,  0.5f,  0.5f,
+        // left
+        -0.5f,  0.5f,  0.5f,  -1.0f,  0.0f,  0.0f,
+        -0.5f,  0.5f, -0.5f,  -1.0f,  0.0f,  0.0f,
+        -0.5f, -0.5f, -0.5f,  -1.0f,  0.0f,  0.0f,
+        -0.5f, -0.5f, -0.5f,  -1.0f,  0.0f,  0.0f,
+        -0.5f, -0.5f,  0.5f,  -1.0f,  0.0f,  0.0f,
+        -0.5f,  0.5f,  0.5f,  -1.0f,  0.0f,  0.0f,
 
-         0.5f,  0.5f,  0.5f,
-         0.5f, -0.5f, -0.5f,
-         0.5f,  0.5f, -0.5f,
-         0.5f, -0.5f, -0.5f,
-         0.5f,  0.5f,  0.5f,
-         0.5f, -0.5f,  0.5f,
+        // right
+        0.5f,  0.5f,  0.5f,   1.0f,  0.0f,  0.0f,
+        0.5f, -0.5f, -0.5f,   1.0f,  0.0f,  0.0f,
+        0.5f,  0.5f, -0.5f,   1.0f,  0.0f,  0.0f,
+        0.5f, -0.5f, -0.5f,   1.0f,  0.0f,  0.0f,
+        0.5f,  0.5f,  0.5f,   1.0f,  0.0f,  0.0f,
+        0.5f, -0.5f,  0.5f,   1.0f,  0.0f,  0.0f,
 
-        -0.5f,  0.5f, -0.5f,
-        -0.5f,  0.5f,  0.5f,
-         0.5f,  0.5f,  0.5f,
-         0.5f,  0.5f,  0.5f,
-         0.5f,  0.5f, -0.5f,
-        -0.5f,  0.5f, -0.5f,
+        // top
+        -0.5f,  0.5f, -0.5f,   0.0f,  1.0f,  0.0f,
+        -0.5f,  0.5f,  0.5f,   0.0f,  1.0f,  0.0f,
+        0.5f,  0.5f,  0.5f,   0.0f,  1.0f,  0.0f,
+        0.5f,  0.5f,  0.5f,   0.0f,  1.0f,  0.0f,
+        0.5f,  0.5f, -0.5f,   0.0f,  1.0f,  0.0f,
+        -0.5f,  0.5f, -0.5f,   0.0f,  1.0f,  0.0f,
 
-        -0.5f, -0.5f, -0.5f,
-         0.5f, -0.5f, -0.5f,
-         0.5f, -0.5f,  0.5f,
-         0.5f, -0.5f,  0.5f,
-        -0.5f, -0.5f,  0.5f,
-        -0.5f, -0.5f, -0.5f
+        // bottom
+        -0.5f, -0.5f, -0.5f,   0.0f, -1.0f,  0.0f,
+        0.5f, -0.5f, -0.5f,   0.0f, -1.0f,  0.0f,
+        0.5f, -0.5f,  0.5f,   0.0f, -1.0f,  0.0f,
+        0.5f, -0.5f,  0.5f,   0.0f, -1.0f,  0.0f,
+        -0.5f, -0.5f,  0.5f,   0.0f, -1.0f,  0.0f,
+        -0.5f, -0.5f, -0.5f,   0.0f, -1.0f,  0.0f
     };
 
     glGenVertexArrays(1, &vao);
@@ -80,11 +86,20 @@ bool ShelterSystem::init() {
         3,
         GL_FLOAT,
         GL_FALSE,
-        3 * sizeof(float),
+        6 * sizeof(float),
         (void*)0
     );
-
     glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(
+        1,
+        3,
+        GL_FLOAT,
+        GL_FALSE,
+        6 * sizeof(float),
+        (void*)(3 * sizeof(float))
+    );
+    glEnableVertexAttribArray(1);
 
     glBindVertexArray(0);
 
@@ -97,10 +112,10 @@ bool ShelterSystem::init() {
 }
 
 void ShelterSystem::createShelter(float centerX) {
-    const float y = -1.45f;
+    const float y = -1.8f;
     const float z = -2.1f;
 
-    const glm::vec3 blockScale(0.18f, 0.14f, 0.24f);
+    const glm::vec3 blockScale(0.18f, 0.14f, 0.75f);
 
     blocks.push_back({ glm::vec3(centerX - 0.45f, y, z), blockScale });
     blocks.push_back({ glm::vec3(centerX - 0.27f, y, z), blockScale });
