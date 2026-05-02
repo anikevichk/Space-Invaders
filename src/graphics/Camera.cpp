@@ -20,20 +20,19 @@ glm::mat4 Camera::getViewMatrix() const {
 
 glm::mat4 Camera::getProjectionMatrix() const {
     float aspect = width / height;
-    float halfWidth = worldHalfHeight * aspect;
 
-    return glm::ortho(
-        -halfWidth,
-         halfWidth,
-        -worldHalfHeight,
-         worldHalfHeight,
-         0.1f,
-         100.0f
+    return glm::perspective(
+        glm::radians(45.0f),
+        aspect,
+        0.1f,
+        100.0f
     );
 }
 
 float Camera::getWorldHalfWidth() const {
-    return worldHalfHeight * (width / height);
+    float aspect = width / height;
+
+    return 3.0f * aspect;
 }
 
 float Camera::getPlayerMinX() const {

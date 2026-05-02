@@ -75,14 +75,21 @@ bool Game::init() {
     std::cout << "Failed to initialize shelter system\n";
     return false;
 }
+    lastTime = static_cast<float>(glfwGetTime());
     return true;
 }
 
 void Game::run() {
     while (!glfwWindowShouldClose(window)) {
+        glfwPollEvents();
+
         float currentTime = static_cast<float>(glfwGetTime());
         float deltaTime = currentTime - lastTime;
         lastTime = currentTime;
+
+        if (deltaTime > 0.033f) {
+            deltaTime = 0.033f;
+        }
 
         player.updateInput(
             window,
@@ -107,7 +114,6 @@ void Game::run() {
         bulletSystem.draw(view, projection);
 
         glfwSwapBuffers(window);
-        glfwPollEvents();
     }
 }
 

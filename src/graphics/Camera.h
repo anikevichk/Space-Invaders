@@ -18,6 +18,4 @@ public:
 private:
     float width;
     float height;
-
-    const float worldHalfHeight = 3.0f;
 };
