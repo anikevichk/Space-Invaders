@@ -7,6 +7,7 @@
 
 #include "Shader.h"
 #include "ShelterSystem.h"
+#include "EnemySystem.h"
 
 bool BulletSystem::init() {
     bulletShader = createShaderProgram(
@@ -53,27 +54,34 @@ void BulletSystem::update(
     GLFWwindow* window,
     float deltaTime,
     const glm::mat4& playerModel,
-    ShelterSystem* shelterSystem
+    ShelterSystem* shelterSystem,
+    EnemySystem* enemySystem
 ) {
+    // Remove bullets that were marked last frame
+    bullets.erase(
+        std::remove_if(bullets.begin(), bullets.end(),
+            [](const Bullet& b) { return b.markedForRemoval; }),
+        bullets.end()
+    );
+
     shootCooldown -= deltaTime;
 
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && shootCooldown <= 0.0f) {
         if (bullets.size() < 1000) {
             Bullet bullet;
 
-            glm::vec3 localMuzzle = glm::vec3(0.0f, 0.0f, 2.3f);
-            glm::vec3 localDirection = glm::vec3(0.0f, 0.0f, 1.0f);
+            glm::vec3 localMuzzle     = glm::vec3(0.0f, 0.0f, 2.3f);
+            glm::vec3 localDirection  = glm::vec3(0.0f, 0.0f, 1.0f);
 
-            bullet.position = glm::vec3(
-                playerModel * glm::vec4(localMuzzle, 1.0f)
-            );
+            bullet.position     = glm::vec3(playerModel * glm::vec4(localMuzzle, 1.0f));
+            bullet.prevPosition = bullet.position;
 
             glm::vec3 worldDirection = glm::normalize(
                 glm::mat3(playerModel) * localDirection
             );
 
             bullet.direction = worldDirection;
-            bullet.velocity = worldDirection * 7.0f;
+            bullet.velocity  = worldDirection * 22.0f;
 
             bullets.push_back(bullet);
         }
@@ -81,40 +89,32 @@ void BulletSystem::update(
         shootCooldown = 0.20f;
     }
 
+    // Move bullets
     for (Bullet& bullet : bullets) {
+        bullet.prevPosition = bullet.position;
         bullet.position += bullet.velocity * deltaTime;
     }
 
-    bullets.erase(
-        std::remove_if(
-            bullets.begin(),
-            bullets.end(),
-            [shelterSystem](const Bullet& bullet) {
-                glm::vec3 bulletStart = bullet.position - bullet.direction * 0.45f;
-                glm::vec3 bulletEnd = bullet.position + bullet.direction * 0.45f;
+    // Check collisions — only mark, don't remove yet so draw() shows the bullet at impact position
+    for (Bullet& bullet : bullets) {
+        if (bullet.markedForRemoval) continue;
 
-                bool hitShelter = false;
+        // Sweep 2 units backward from current position so we also catch enemies
+        // that have advanced past the muzzle (between player and bullet start).
+        glm::vec3 bulletStart = bullet.position - bullet.direction * 4.0f;
+        glm::vec3 bulletEnd   = bullet.position;
 
-                if (shelterSystem != nullptr) {
-                    hitShelter = shelterSystem->hitByBullet(
-                        bulletStart,
-                        bulletEnd
-                    );
-                }
+        bool hitShelter = shelterSystem && shelterSystem->hitByBullet(bulletStart, bulletEnd);
+        bool hitEnemy   = !hitShelter && enemySystem && enemySystem->hitByBullet(bulletStart, bulletEnd);
 
-                bool outOfBounds =
-                    bullet.position.x < -10.0f ||
-                    bullet.position.x >  10.0f ||
-                    bullet.position.y < -10.0f ||
-                    bullet.position.y >  10.0f ||
-                    bullet.position.z < -15.0f ||
-                    bullet.position.z >  15.0f;
+        bool outOfBounds =
+            bullet.position.x < -10.0f || bullet.position.x >  10.0f ||
+            bullet.position.y < -10.0f || bullet.position.y >  10.0f ||
+            bullet.position.z < -15.0f || bullet.position.z >  15.0f;
 
-                return hitShelter || outOfBounds;
-            }
-        ),
-        bullets.end()
-    );
+        if (hitShelter || hitEnemy || outOfBounds)
+            bullet.markedForRemoval = true;
+    }
 }
 
 void BulletSystem::draw(const glm::mat4& view, const glm::mat4& projection) {
@@ -159,6 +159,7 @@ void BulletSystem::draw(const glm::mat4& view, const glm::mat4& projection) {
         bulletLinePoints.data()
     );
 
+    glDisable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
     glDepthMask(GL_FALSE);
@@ -207,6 +208,7 @@ void BulletSystem::draw(const glm::mat4& view, const glm::mat4& projection) {
 
     glDepthMask(GL_TRUE);
     glDisable(GL_BLEND);
+    glEnable(GL_DEPTH_TEST);
 }
 
 void BulletSystem::cleanup() {

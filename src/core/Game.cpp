@@ -72,9 +72,15 @@ bool Game::init() {
     }
 
     if (!shelterSystem.init()) {
-    std::cout << "Failed to initialize shelter system\n";
-    return false;
-}
+        std::cout << "Failed to initialize shelter system\n";
+        return false;
+    }
+
+    if (!enemySystem.init()) {
+        std::cout << "Failed to initialize enemy system\n";
+        return false;
+    }
+
     lastTime = static_cast<float>(glfwGetTime());
     return true;
 }
@@ -100,16 +106,26 @@ void Game::run() {
 
         glm::mat4 playerModel = player.getModelMatrix();
 
-        bulletSystem.update(window, deltaTime, playerModel, &shelterSystem);
+        enemySystem.update(deltaTime);
+        bulletSystem.update(window, deltaTime, playerModel, &shelterSystem, &enemySystem);
+
+        if (enemySystem.playerHit(player.getX(), 0.0f)) {
+            // TODO: handle lives
+        }
+
+        if (enemySystem.allDead()) {
+            enemySystem.reset();
+        }
 
         glClearColor(0.03f, 0.03f, 0.08f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glm::mat4 view = camera.getViewMatrix();
+        glm::mat4 view       = camera.getViewMatrix();
         glm::mat4 projection = camera.getProjectionMatrix();
 
         starfield.draw(view, projection);
         shelterSystem.draw(view, projection);
+        enemySystem.draw(view, projection);
         player.draw(view, projection);
         bulletSystem.draw(view, projection);
 
@@ -118,6 +134,7 @@ void Game::run() {
 }
 
 void Game::cleanup() {
+    enemySystem.cleanup();
     shelterSystem.cleanup();
     bulletSystem.cleanup();
     player.cleanup();

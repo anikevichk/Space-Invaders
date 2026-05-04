@@ -8,6 +8,7 @@
 #include "Camera.h"
 #include "Starfield.h"
 #include "ShelterSystem.h"
+#include "EnemySystem.h"
 
 class Game {
 public:
@@ -25,6 +26,7 @@ private:
     BulletSystem bulletSystem;
     Starfield starfield;
     ShelterSystem shelterSystem;
+    EnemySystem enemySystem;
     Camera camera = Camera(800.0f, 600.0f);
 
     float lastTime = 0.0f;
