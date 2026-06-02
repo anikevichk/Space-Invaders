@@ -24,7 +24,7 @@ public:
     void cleanup();
     void reset();
 
-    bool hitByBullet(const glm::vec3& bulletStart, const glm::vec3& bulletEnd);
+    bool hitByBullet(const glm::vec3& bulletStart, const glm::vec3& bulletEnd, glm::vec3* killedEnemyPosition = nullptr);
     bool playerHit(float playerX, float playerZ);
     bool allDead()   const;
     int  aliveCount() const;

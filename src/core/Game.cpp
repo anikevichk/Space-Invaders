@@ -81,6 +81,16 @@ bool Game::init() {
         return false;
     }
 
+    if (!powerUpSystem.init()) {
+        std::cout << "Failed to initialize power-up system\n";
+        return false;
+    }
+
+    if (!hudSystem.init()) {
+        std::cout << "Failed to initialize HUD system\n";
+        return false;
+    }
+
     lastTime = static_cast<float>(glfwGetTime());
     return true;
 }
@@ -107,10 +117,44 @@ void Game::run() {
         glm::mat4 playerModel = player.getModelMatrix();
 
         enemySystem.update(deltaTime);
-        bulletSystem.update(window, deltaTime, playerModel, &shelterSystem, &enemySystem);
+        bulletSystem.update(
+            window,
+            deltaTime,
+            playerModel,
+            &shelterSystem,
+            &enemySystem,
+            &powerUpSystem
+        );
+
+        powerUpSystem.update(deltaTime);
+
+        PowerUpEffect effect = powerUpSystem.collect(player.getX(), 0.0f);
+
+        if (effect == PowerUpEffect::FastBullets) {
+            bulletSystem.activateFastBullets(8.0f);
+            std::cout << "Power-up: fast bullets\n";
+        }
+
+        if (effect == PowerUpEffect::ExtraLife) {
+            if (lives < maxLives) {
+                lives++;
+            }
+
+            std::cout << "Power-up: extra life, lives = " << lives << "\n";
+        }
 
         if (enemySystem.playerHit(player.getX(), 0.0f)) {
-            // TODO: handle lives
+            if (enemySystem.playerHit(player.getX(), 0.0f)) {
+                lives--;
+
+                std::cout << "Player hit, lives = " << lives << "\n";
+
+                if (lives <= 0) {
+                    lives = 3;
+                    enemySystem.reset();
+                    powerUpSystem.clear();
+                }
+            }
         }
 
         if (enemySystem.allDead()) {
@@ -126,14 +170,23 @@ void Game::run() {
         starfield.draw(view, projection);
         shelterSystem.draw(view, projection);
         enemySystem.draw(view, projection);
+        powerUpSystem.draw(view, projection);
         player.draw(view, projection);
         bulletSystem.draw(view, projection);
+
+        hudSystem.draw(
+            lives,
+            bulletSystem.isFastBulletsActive(),
+            bulletSystem.getFastBulletsTimeLeft()
+        );
 
         glfwSwapBuffers(window);
     }
 }
 
 void Game::cleanup() {
+    hudSystem.cleanup();
+    powerUpSystem.cleanup();
     enemySystem.cleanup();
     shelterSystem.cleanup();
     bulletSystem.cleanup();

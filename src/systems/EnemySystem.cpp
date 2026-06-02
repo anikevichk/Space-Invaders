@@ -270,19 +270,33 @@ void EnemySystem::update(float deltaTime) {
     );
 }
 
-bool EnemySystem::hitByBullet(const glm::vec3& bulletStart, const glm::vec3& bulletEnd) {
+bool EnemySystem::hitByBullet(
+    const glm::vec3& bulletStart,
+    const glm::vec3& bulletEnd,
+    glm::vec3* killedEnemyPosition
+) {
     constexpr int STEPS = 12;
+
     for (int i = 0; i < static_cast<int>(enemies.size()); i++) {
-        if (!enemies[i].alive) continue;
+        if (!enemies[i].alive) {
+            continue;
+        }
+
         for (int s = 0; s <= STEPS; s++) {
-            float t  = static_cast<float>(s) / static_cast<float>(STEPS);
+            float t = static_cast<float>(s) / static_cast<float>(STEPS);
             glm::vec3 pt = bulletStart + (bulletEnd - bulletStart) * t;
+
             if (bulletHitsEnemy(pt, i)) {
+                if (killedEnemyPosition != nullptr) {
+                    *killedEnemyPosition = enemyWorldPos(enemies[i]);
+                }
+
                 enemies[i].alive = false;
                 return true;
             }
         }
     }
+
     return false;
 }
 
