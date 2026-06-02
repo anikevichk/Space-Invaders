@@ -8,6 +8,7 @@
 #include "Shader.h"
 #include "ShelterSystem.h"
 #include "EnemySystem.h"
+#include "PowerUpSystem.h"
 
 bool BulletSystem::init() {
     bulletShader = createShaderProgram(
@@ -55,25 +56,42 @@ void BulletSystem::update(
     float deltaTime,
     const glm::mat4& playerModel,
     ShelterSystem* shelterSystem,
-    EnemySystem* enemySystem
+    EnemySystem* enemySystem,
+    PowerUpSystem* powerUpSystem
 ) {
     // Remove bullets that were marked last frame
     bullets.erase(
-        std::remove_if(bullets.begin(), bullets.end(),
-            [](const Bullet& b) { return b.markedForRemoval; }),
+        std::remove_if(
+            bullets.begin(),
+            bullets.end(),
+            [](const Bullet& b) {
+                return b.markedForRemoval;
+            }
+        ),
         bullets.end()
     );
 
+    // Fast bullets timer
+    if (fastBulletTimer > 0.0f) {
+        fastBulletTimer -= deltaTime;
+
+        if (fastBulletTimer <= 0.0f) {
+            bulletSpeed = normalBulletSpeed;
+            fastBulletTimer = 0.0f;
+        }
+    }
+
     shootCooldown -= deltaTime;
 
+    // Shooting
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && shootCooldown <= 0.0f) {
         if (bullets.size() < 1000) {
             Bullet bullet;
 
-            glm::vec3 localMuzzle     = glm::vec3(0.0f, 0.0f, 2.3f);
-            glm::vec3 localDirection  = glm::vec3(0.0f, 0.0f, 1.0f);
+            glm::vec3 localMuzzle = glm::vec3(0.0f, 0.0f, 2.3f);
+            glm::vec3 localDirection = glm::vec3(0.0f, 0.0f, 1.0f);
 
-            bullet.position     = glm::vec3(playerModel * glm::vec4(localMuzzle, 1.0f));
+            bullet.position = glm::vec3(playerModel * glm::vec4(localMuzzle, 1.0f));
             bullet.prevPosition = bullet.position;
 
             glm::vec3 worldDirection = glm::normalize(
@@ -81,7 +99,7 @@ void BulletSystem::update(
             );
 
             bullet.direction = worldDirection;
-            bullet.velocity  = worldDirection * 22.0f;
+            bullet.velocity = worldDirection * bulletSpeed;
 
             bullets.push_back(bullet);
         }
@@ -95,25 +113,45 @@ void BulletSystem::update(
         bullet.position += bullet.velocity * deltaTime;
     }
 
-    // Check collisions — only mark, don't remove yet so draw() shows the bullet at impact position
+    // Check collisions
     for (Bullet& bullet : bullets) {
-        if (bullet.markedForRemoval) continue;
+        if (bullet.markedForRemoval) {
+            continue;
+        }
 
-        // Sweep 2 units backward from current position so we also catch enemies
-        // that have advanced past the muzzle (between player and bullet start).
         glm::vec3 bulletStart = bullet.position - bullet.direction * 4.0f;
-        glm::vec3 bulletEnd   = bullet.position;
+        glm::vec3 bulletEnd = bullet.position;
 
-        bool hitShelter = shelterSystem && shelterSystem->hitByBullet(bulletStart, bulletEnd);
-        bool hitEnemy   = !hitShelter && enemySystem && enemySystem->hitByBullet(bulletStart, bulletEnd);
+        bool hitShelter =
+            shelterSystem &&
+            shelterSystem->hitByBullet(bulletStart, bulletEnd);
+
+        glm::vec3 killedEnemyPosition;
+
+        bool hitEnemy =
+            !hitShelter &&
+            enemySystem &&
+            enemySystem->hitByBullet(
+                bulletStart,
+                bulletEnd,
+                &killedEnemyPosition
+            );
+
+        if (hitEnemy && powerUpSystem != nullptr) {
+            powerUpSystem->trySpawn(killedEnemyPosition);
+        }
 
         bool outOfBounds =
-            bullet.position.x < -10.0f || bullet.position.x >  10.0f ||
-            bullet.position.y < -10.0f || bullet.position.y >  10.0f ||
-            bullet.position.z < -15.0f || bullet.position.z >  15.0f;
+            bullet.position.x < -10.0f ||
+            bullet.position.x > 10.0f ||
+            bullet.position.y < -10.0f ||
+            bullet.position.y > 10.0f ||
+            bullet.position.z < -15.0f ||
+            bullet.position.z > 15.0f;
 
-        if (hitShelter || hitEnemy || outOfBounds)
+        if (hitShelter || hitEnemy || outOfBounds) {
             bullet.markedForRemoval = true;
+        }
     }
 }
 
@@ -228,4 +266,17 @@ void BulletSystem::cleanup() {
     }
 
     bullets.clear();
+}
+
+void BulletSystem::activateFastBullets(float duration) {
+    bulletSpeed = 35.0f;
+    fastBulletTimer = duration;
+}
+
+bool BulletSystem::isFastBulletsActive() const {
+    return fastBulletTimer > 0.0f;
+}
+
+float BulletSystem::getFastBulletsTimeLeft() const {
+    return fastBulletTimer;
 }

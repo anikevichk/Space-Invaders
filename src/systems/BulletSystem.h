@@ -8,6 +8,7 @@
 #include <vector>
 class ShelterSystem;
 class EnemySystem;
+class PowerUpSystem;
 
 struct Bullet {
     glm::vec3 position;
@@ -25,10 +26,15 @@ public:
         float deltaTime,
         const glm::mat4& playerModel,
         ShelterSystem* shelterSystem,
-        EnemySystem* enemySystem = nullptr
+        EnemySystem* enemySystem = nullptr,
+        PowerUpSystem* powerUpSystem = nullptr
     );
     void draw(const glm::mat4& view, const glm::mat4& projection);
     void cleanup();
+
+    void activateFastBullets(float duration);
+    bool isFastBulletsActive() const;
+    float getFastBulletsTimeLeft() const;
 
 private:
     GLuint bulletShader = 0;
@@ -38,4 +44,8 @@ private:
     std::vector<Bullet> bullets;
 
     float shootCooldown = 0.0f;
+
+    float bulletSpeed = 22.0f;
+    float normalBulletSpeed = 22.0f;
+    float fastBulletTimer = 0.0f;
 };

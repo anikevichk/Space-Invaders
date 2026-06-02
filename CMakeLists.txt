@@ -31,6 +31,10 @@ add_executable(SpaceInvaders
         src/graphics/Mesh.cpp
 
         src/loaders/ObjLoader.cpp
+        src/systems/PowerUpSystem.cpp
+        src/systems/PowerUpSystem.h
+        src/systems/HudSystem.cpp
+        src/systems/HudSystem.h
 )
 
 target_include_directories(SpaceInvaders

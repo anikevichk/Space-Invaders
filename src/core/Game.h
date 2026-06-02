@@ -9,6 +9,8 @@
 #include "Starfield.h"
 #include "ShelterSystem.h"
 #include "EnemySystem.h"
+#include "PowerUpSystem.h"
+#include "HudSystem.h"
 
 class Game {
 public:
@@ -31,4 +33,11 @@ private:
 
     float lastTime = 0.0f;
     void updateViewport();
+
+    PowerUpSystem powerUpSystem;
+
+    int lives = 3;
+    const int maxLives = 5;
+
+    HudSystem hudSystem;
 };
