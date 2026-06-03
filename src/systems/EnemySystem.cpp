@@ -2,6 +2,7 @@
 #include "Shader.h"
 #include "ObjLoader.h"
 #include "Texture.h"
+#include "ShelterSystem.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -10,6 +11,7 @@
 #include <ctime>
 #include <iostream>
 #include <limits>
+static constexpr float BULLET_RENDER_Y = -1.65f;
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -155,7 +157,7 @@ void EnemySystem::buildGrid() {
     dirX        = 1.0f;
     totalTime   = 0.0f;
     shootTimer  = 0.0f;
-    nextShootIn = 1.5f;
+    nextShootIn = 1.0f;
     enemyBullets.clear();
 }
 
@@ -182,90 +184,123 @@ glm::vec3 EnemySystem::enemyWorldPos(const Enemy& e) const {
 }
 
 bool EnemySystem::bulletHitsEnemy(const glm::vec3& pt, int idx) const {
-    int row = idx / COLS;
-    const EnemyType* type = nullptr;
-    for (const auto& t : types) {
-        if (row >= t.firstRow && row < t.firstRow + t.numRows) {
-            type = &t;
-            break;
-        }
-    }
-    float hx = type ? type->hitboxHX : HITBOX_HX;
-    float hz = type ? type->hitboxHZ : HITBOX_HZ;
+    static constexpr float ENEMY_HITBOX_X = 0.35f;
+    static constexpr float ENEMY_HITBOX_Z = 0.35f;
 
     glm::vec3 pos = enemyWorldPos(enemies[idx]);
-    return std::abs(pt.x - pos.x) <= hx &&
-           std::abs(pt.z - pos.z) <= hz;
+
+    return std::abs(pt.x - pos.x) <= ENEMY_HITBOX_X &&
+           std::abs(pt.z - pos.z) <= ENEMY_HITBOX_Z;
 }
 
 void EnemySystem::shootFromRandom() {
     std::vector<int> shooters;
     shooters.reserve(COLS);
+
     for (int col = 0; col < COLS; col++) {
         int best = -1;
+
         for (int row = 0; row < ROWS; row++) {
             int idx = row * COLS + col;
-            if (!enemies[idx].alive) continue;
-            if (best == -1 ||
-                enemies[idx].basePosition.z > enemies[best].basePosition.z)
-                best = idx;
-        }
-        if (best != -1) shooters.push_back(best);
-    }
-    if (shooters.empty()) return;
 
-    std::uniform_int_distribution<int> pick(0, static_cast<int>(shooters.size()) - 1);
+            if (!enemies[idx].alive) {
+                continue;
+            }
+
+            if (best == -1 || enemies[idx].basePosition.z > enemies[best].basePosition.z) {
+                best = idx;
+            }
+        }
+
+        if (best != -1) {
+            shooters.push_back(best);
+        }
+    }
+
+    if (shooters.empty()) {
+        return;
+    }
+
+    std::uniform_int_distribution<int> pick(
+        0,
+        static_cast<int>(shooters.size()) - 1
+    );
+
     int idx = shooters[pick(rng)];
 
+    glm::vec3 enemyPos = enemyWorldPos(enemies[idx]);
+
     EnemyBullet b;
-    b.position = enemyWorldPos(enemies[idx]);
+    b.position = glm::vec3(enemyPos.x, BULLET_RENDER_Y, enemyPos.z + 0.25f);
+    b.prevPosition = b.position;
     b.velocity = glm::vec3(0.0f, 0.0f, BULLET_SPEED);
+
     enemyBullets.push_back(b);
 }
 
-void EnemySystem::update(float deltaTime) {
-    if (allDead()) return;
+void EnemySystem::update(float deltaTime, float minBoundaryX, float maxBoundaryX, ShelterSystem* shelterSystem) {
+    if (allDead()) {
+        return;
+    }
 
-    totalTime   += deltaTime;
+    totalTime += deltaTime;
     gridOffsetX += dirX * currentSpeed() * deltaTime;
 
-    float minX =  std::numeric_limits<float>::max();
+    float minX = std::numeric_limits<float>::max();
     float maxX = -std::numeric_limits<float>::max();
+
     for (const auto& e : enemies) {
-        if (!e.alive) continue;
+        if (!e.alive) {
+            continue;
+        }
+
         float wx = e.basePosition.x + gridOffsetX;
-        if (wx < minX) minX = wx;
-        if (wx > maxX) maxX = wx;
+
+        if (wx < minX) {
+            minX = wx;
+        }
+
+        if (wx > maxX) {
+            maxX = wx;
+        }
     }
 
-    bool advance = false;
-    if (dirX > 0.0f && maxX + HITBOX_HX >= BOUNDARY_X) {
-        dirX    = -1.0f;
-        advance = true;
-    } else if (dirX < 0.0f && minX - HITBOX_HX <= -BOUNDARY_X) {
-        dirX    = 1.0f;
-        advance = true;
-    }
-
-    if (advance) {
-        for (auto& e : enemies)
-            e.basePosition.z += ADVANCE_Z;
+    if (dirX > 0.0f && maxX + HITBOX_HX >= maxBoundaryX) {
+        dirX = -1.0f;
+    } else if (dirX < 0.0f && minX - HITBOX_HX <= minBoundaryX) {
+        dirX = 1.0f;
     }
 
     shootTimer += deltaTime;
+
     if (shootTimer >= nextShootIn) {
         shootTimer = 0.0f;
-        std::uniform_real_distribution<float> interval(0.5f, 2.5f);
+
+        std::uniform_real_distribution<float> interval(0.35f, 1.35f);
         nextShootIn = interval(rng);
+
         shootFromRandom();
     }
 
-    for (auto& b : enemyBullets)
+    for (EnemyBullet& b : enemyBullets) {
+        b.prevPosition = b.position;
         b.position += b.velocity * deltaTime;
+    }
 
     enemyBullets.erase(
-        std::remove_if(enemyBullets.begin(), enemyBullets.end(),
-            [](const EnemyBullet& b) { return b.position.z > 5.0f; }),
+        std::remove_if(
+            enemyBullets.begin(),
+            enemyBullets.end(),
+            [&](const EnemyBullet& b) {
+                bool outOfBounds = b.position.z > 1.2f;
+
+                bool hitShelter =
+                    shelterSystem != nullptr &&
+                    shelterSystem->hitByBullet(b.prevPosition, b.position);
+
+                return outOfBounds || hitShelter;
+            }
+        ),
         enemyBullets.end()
     );
 }
@@ -301,19 +336,37 @@ bool EnemySystem::hitByBullet(
 }
 
 bool EnemySystem::playerHit(float playerX, float playerZ) {
+    static constexpr float PLAYER_HITBOX_X = 0.75f;
+    static constexpr float PLAYER_HITBOX_Z = 0.35f;
+    static constexpr int STEPS = 8;
+
     bool hit = false;
+
     enemyBullets.erase(
-        std::remove_if(enemyBullets.begin(), enemyBullets.end(),
+        std::remove_if(
+            enemyBullets.begin(),
+            enemyBullets.end(),
             [&](const EnemyBullet& b) {
-                if (std::abs(b.position.x - playerX) < 0.45f &&
-                    std::abs(b.position.z - playerZ) < 0.50f) {
-                    hit = true;
-                    return true;
+                for (int i = 0; i <= STEPS; i++) {
+                    float t = static_cast<float>(i) / static_cast<float>(STEPS);
+                    glm::vec3 point = b.prevPosition + (b.position - b.prevPosition) * t;
+
+                    bool bulletHitsPlayer =
+                        std::abs(point.x - playerX) <= PLAYER_HITBOX_X &&
+                        std::abs(point.z - playerZ) <= PLAYER_HITBOX_Z;
+
+                    if (bulletHitsPlayer) {
+                        hit = true;
+                        return true;
+                    }
                 }
+
                 return false;
-            }),
+            }
+        ),
         enemyBullets.end()
     );
+
     return hit;
 }
 

@@ -5,9 +5,11 @@
 #include <array>
 #include <vector>
 #include <random>
+class ShelterSystem;
 
 struct EnemyBullet {
     glm::vec3 position;
+    glm::vec3 prevPosition;
     glm::vec3 velocity;
 };
 
@@ -19,7 +21,7 @@ struct Enemy {
 class EnemySystem {
 public:
     bool init();
-    void update(float deltaTime);
+    void update(float deltaTime, float minX, float maxX, ShelterSystem* shelterSystem = nullptr);
     void draw(const glm::mat4& view, const glm::mat4& projection);
     void cleanup();
     void reset();
@@ -38,12 +40,12 @@ private:
     static constexpr float GRID_BASE_Z = -4.00f;
     static constexpr float GRID_Y      = -0.50f;
     static constexpr float ENEMY_SCALE = 0.09f;
-    static constexpr float HITBOX_HX   = 0.42f;
-    static constexpr float HITBOX_HZ   = 0.38f;
+    static constexpr float HITBOX_HX   = 0.28f;
+    static constexpr float HITBOX_HZ   = 0.28f;
     static constexpr float SPEED_BASE  = 0.80f;
     static constexpr float SPEED_MAX   = 2.50f;
-    static constexpr float BOUNDARY_X  = 3.20f;
-    static constexpr float ADVANCE_Z   = 0.167f;   // was 0.5, /3
+    // static constexpr float BOUNDARY_X  = 3.20f;
+    // static constexpr float ADVANCE_Z   = 0.167f;   // was 0.5, /3
     static constexpr float BULLET_SPEED = 3.5f;
     static constexpr int   TYPE_COUNT  = 3;
 

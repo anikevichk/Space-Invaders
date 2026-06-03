@@ -10,6 +10,8 @@
 #include "EnemySystem.h"
 #include "PowerUpSystem.h"
 
+static constexpr float BULLET_RENDER_Y = -1.65f;
+
 bool BulletSystem::init() {
     bulletShader = createShaderProgram(
         "shaders/bullet.vert",
@@ -88,18 +90,18 @@ void BulletSystem::update(
         if (bullets.size() < 1000) {
             Bullet bullet;
 
-            glm::vec3 localMuzzle = glm::vec3(0.0f, 0.0f, 2.3f);
-            glm::vec3 localDirection = glm::vec3(0.0f, 0.0f, 1.0f);
+        glm::vec3 playerWorldPosition = glm::vec3(playerModel[3]);
 
-            bullet.position = glm::vec3(playerModel * glm::vec4(localMuzzle, 1.0f));
-            bullet.prevPosition = bullet.position;
+        bullet.position = glm::vec3(
+            playerWorldPosition.x,
+            BULLET_RENDER_Y,
+            playerWorldPosition.z - 0.45f
+        );
 
-            glm::vec3 worldDirection = glm::normalize(
-                glm::mat3(playerModel) * localDirection
-            );
+        bullet.prevPosition = bullet.position;
 
-            bullet.direction = worldDirection;
-            bullet.velocity = worldDirection * bulletSpeed;
+        bullet.direction = glm::vec3(0.0f, 0.0f, -1.0f);
+        bullet.velocity = bullet.direction * bulletSpeed;
 
             bullets.push_back(bullet);
         }
@@ -119,7 +121,7 @@ void BulletSystem::update(
             continue;
         }
 
-        glm::vec3 bulletStart = bullet.position - bullet.direction * 4.0f;
+        glm::vec3 bulletStart = bullet.prevPosition;
         glm::vec3 bulletEnd = bullet.position;
 
         bool hitShelter =

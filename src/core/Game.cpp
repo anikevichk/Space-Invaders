@@ -116,7 +116,7 @@ void Game::run() {
 
         glm::mat4 playerModel = player.getModelMatrix();
 
-        enemySystem.update(deltaTime);
+        enemySystem.update(deltaTime, camera.getPlayerMinX(), camera.getPlayerMaxX(), &shelterSystem);
         bulletSystem.update(
             window,
             deltaTime,
@@ -144,16 +144,14 @@ void Game::run() {
         }
 
         if (enemySystem.playerHit(player.getX(), 0.0f)) {
-            if (enemySystem.playerHit(player.getX(), 0.0f)) {
-                lives--;
+            lives--;
 
-                std::cout << "Player hit, lives = " << lives << "\n";
+            std::cout << "Player hit, lives = " << lives << "\n";
 
-                if (lives <= 0) {
-                    lives = 3;
-                    enemySystem.reset();
-                    powerUpSystem.clear();
-                }
+            if (lives <= 0) {
+                lives = 3;
+                enemySystem.reset();
+                powerUpSystem.clear();
             }
         }
 
