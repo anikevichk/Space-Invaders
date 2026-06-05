@@ -282,6 +282,13 @@ void BulletSystem::cleanup() {
     bullets.clear();
 }
 
+void BulletSystem::clear() {
+    bullets.clear();
+    shootCooldown = 0.0f;
+    fastBulletTimer = 0.0f;
+    bulletSpeed = normalBulletSpeed;
+}
+
 void BulletSystem::activateFastBullets(float duration) {
     bulletSpeed = 35.0f;
     fastBulletTimer = duration;

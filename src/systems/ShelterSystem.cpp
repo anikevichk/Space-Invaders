@@ -153,6 +153,14 @@ bool ShelterSystem::bulletHitsBlock(
            bulletPosition.z <= maxZ;
 }
 
+void ShelterSystem::reset() {
+    blocks.clear();
+    createShelter(-2.7f);
+    createShelter(-0.9f);
+    createShelter(0.9f);
+    createShelter(2.7f);
+}
+
 bool ShelterSystem::hitByBullet(
     const glm::vec3& bulletStart,
     const glm::vec3& bulletEnd

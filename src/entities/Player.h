@@ -16,6 +16,7 @@ public:
 
     glm::mat4 getModelMatrix() const;
     float getX() const { return x; }
+    void reset();
 
 private:
     float x = 0.0f;

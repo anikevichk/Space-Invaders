@@ -9,6 +9,7 @@ public:
     bool init();
     void draw(const glm::mat4& view, const glm::mat4& projection);
     void cleanup();
+    void reset();
 
     bool hitByBullet(const glm::vec3& bulletStart, const glm::vec3& bulletEnd);
 

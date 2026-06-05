@@ -75,6 +75,10 @@ void Player::updateInput(
     processInput(window, deltaTime, x, minX, maxX);
 }
 
+void Player::reset() {
+    x = 0.0f;
+}
+
 glm::mat4 Player::getModelMatrix() const {
     glm::mat4 model = glm::mat4(1.0f);
 

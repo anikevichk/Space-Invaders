@@ -33,6 +33,7 @@ public:
     );
     void draw(const glm::mat4& view, const glm::mat4& projection);
     void cleanup();
+    void clear();
 
     void activateFastBullets(float duration);
     bool isFastBulletsActive() const;

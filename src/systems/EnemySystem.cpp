@@ -157,7 +157,7 @@ void EnemySystem::buildGrid() {
     dirX        = 1.0f;
     totalTime   = 0.0f;
     shootTimer  = 0.0f;
-    nextShootIn = 1.0f;
+    nextShootIn = 0.55f;
     enemyBullets.clear();
 }
 
