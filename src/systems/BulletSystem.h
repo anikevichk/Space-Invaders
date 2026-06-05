@@ -9,6 +9,7 @@
 class ShelterSystem;
 class EnemySystem;
 class PowerUpSystem;
+class ParticleSystem;
 
 struct Bullet {
     glm::vec3 position;
@@ -27,7 +28,8 @@ public:
         const glm::mat4& playerModel,
         ShelterSystem* shelterSystem,
         EnemySystem* enemySystem = nullptr,
-        PowerUpSystem* powerUpSystem = nullptr
+        PowerUpSystem* powerUpSystem = nullptr,
+        ParticleSystem* particleSystem = nullptr
     );
     void draw(const glm::mat4& view, const glm::mat4& projection);
     void cleanup();

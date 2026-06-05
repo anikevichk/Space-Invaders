@@ -11,6 +11,7 @@
 #include "EnemySystem.h"
 #include "PowerUpSystem.h"
 #include "HudSystem.h"
+#include "ParticleSystem.h"
 
 class Game {
 public:
@@ -40,4 +41,5 @@ private:
     const int maxLives = 5;
 
     HudSystem hudSystem;
+    ParticleSystem particleSystem;
 };

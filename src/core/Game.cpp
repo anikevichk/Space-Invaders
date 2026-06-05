@@ -1,6 +1,7 @@
 ﻿#include "Game.h"
 
 #include <iostream>
+#include <glm/glm.hpp>
 
 bool Game::init() {
     if (!glfwInit()) {
@@ -91,6 +92,11 @@ bool Game::init() {
         return false;
     }
 
+    if (!particleSystem.init()) {
+        std::cout << "Failed to initialize particle system\n";
+        return false;
+    }
+
     lastTime = static_cast<float>(glfwGetTime());
     return true;
 }
@@ -123,10 +129,12 @@ void Game::run() {
             playerModel,
             &shelterSystem,
             &enemySystem,
-            &powerUpSystem
+            &powerUpSystem,
+            &particleSystem
         );
 
         powerUpSystem.update(deltaTime);
+        particleSystem.update(deltaTime);
 
         PowerUpEffect effect = powerUpSystem.collect(player.getX(), 0.0f);
 
@@ -144,6 +152,7 @@ void Game::run() {
         }
 
         if (enemySystem.playerHit(player.getX(), 0.0f)) {
+            particleSystem.spawnPlayerHit(glm::vec3(player.getX(), -1.65f, 0.0f));
             lives--;
 
             std::cout << "Player hit, lives = " << lives << "\n";
@@ -152,6 +161,7 @@ void Game::run() {
                 lives = 3;
                 enemySystem.reset();
                 powerUpSystem.clear();
+                particleSystem.clear();
             }
         }
 
@@ -171,6 +181,7 @@ void Game::run() {
         powerUpSystem.draw(view, projection);
         player.draw(view, projection);
         bulletSystem.draw(view, projection);
+        particleSystem.draw(view, projection);
 
         hudSystem.draw(
             lives,
@@ -183,6 +194,7 @@ void Game::run() {
 }
 
 void Game::cleanup() {
+    particleSystem.cleanup();
     hudSystem.cleanup();
     powerUpSystem.cleanup();
     enemySystem.cleanup();

@@ -35,6 +35,8 @@ add_executable(SpaceInvaders
         src/systems/PowerUpSystem.h
         src/systems/HudSystem.cpp
         src/systems/HudSystem.h
+        src/systems/ParticleSystem.cpp
+        src/systems/ParticleSystem.h
 )
 
 target_include_directories(SpaceInvaders

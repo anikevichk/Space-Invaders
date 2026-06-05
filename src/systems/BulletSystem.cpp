@@ -9,6 +9,7 @@
 #include "ShelterSystem.h"
 #include "EnemySystem.h"
 #include "PowerUpSystem.h"
+#include "ParticleSystem.h"
 
 static constexpr float BULLET_RENDER_Y = -1.65f;
 
@@ -59,7 +60,8 @@ void BulletSystem::update(
     const glm::mat4& playerModel,
     ShelterSystem* shelterSystem,
     EnemySystem* enemySystem,
-    PowerUpSystem* powerUpSystem
+    PowerUpSystem* powerUpSystem,
+    ParticleSystem* particleSystem
 ) {
     // Remove bullets that were marked last frame
     bullets.erase(
@@ -139,8 +141,18 @@ void BulletSystem::update(
                 &killedEnemyPosition
             );
 
-        if (hitEnemy && powerUpSystem != nullptr) {
-            powerUpSystem->trySpawn(killedEnemyPosition);
+        if (hitEnemy) {
+            glm::vec3 explosionPos = killedEnemyPosition;
+
+            explosionPos.y += 0.15f;
+
+            if (particleSystem != nullptr) {
+                particleSystem->spawnExplosion(explosionPos);
+            }
+
+            if (powerUpSystem != nullptr) {
+                powerUpSystem->trySpawn(killedEnemyPosition);
+            }
         }
 
         bool outOfBounds =
