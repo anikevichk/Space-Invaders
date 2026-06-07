@@ -158,7 +158,14 @@ void EnemySystem::buildGrid() {
     totalTime   = 0.0f;
     shootTimer  = 0.0f;
     nextShootIn = 0.55f;
+    score       = 0;
     enemyBullets.clear();
+}
+
+static int pointsForRow(int row) {
+    if (row >= 4) return 30;
+    if (row >= 2) return 20;
+    return 10;
 }
 
 void EnemySystem::reset() { buildGrid(); }
@@ -178,6 +185,8 @@ int EnemySystem::aliveCount() const {
 }
 
 bool EnemySystem::allDead() const { return aliveCount() == 0; }
+
+int EnemySystem::getScore() const { return score; }
 
 glm::vec3 EnemySystem::enemyWorldPos(const Enemy& e) const {
     return { e.basePosition.x + gridOffsetX, e.basePosition.y, e.basePosition.z };
@@ -327,6 +336,7 @@ bool EnemySystem::hitByBullet(
                 }
 
                 enemies[i].alive = false;
+                score += pointsForRow(i / COLS);
                 return true;
             }
         }

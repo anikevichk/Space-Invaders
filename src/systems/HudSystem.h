@@ -7,10 +7,10 @@ class HudSystem {
 public:
     bool init();
     void setScreenSize(int width, int height);
-    void draw(int lives, bool fastBulletsActive, float fastBulletsTimeLeft);
+    void draw(int lives, bool fastBulletsActive, float fastBulletsTimeLeft, int score);
     void drawStartScreen();
-    void drawGameOverScreen();
-    void drawWinScreen();
+    void drawGameOverScreen(int score);
+    void drawWinScreen(int score);
     void cleanup();
 
 private:
@@ -104,6 +104,7 @@ private:
         float titleR,
         float titleG,
         float titleB,
-        const std::string& subtitle
+        const std::string& subtitle,
+        int score
     );
 };

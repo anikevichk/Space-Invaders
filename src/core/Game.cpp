@@ -261,7 +261,8 @@ void Game::run() {
             hudSystem.draw(
                 lives,
                 bulletSystem.isFastBulletsActive(),
-                bulletSystem.getFastBulletsTimeLeft()
+                bulletSystem.getFastBulletsTimeLeft(),
+                enemySystem.getScore()
             );
         } else if (state == State::PlayerDying) {
             stateTimer -= deltaTime;
@@ -276,7 +277,8 @@ void Game::run() {
             hudSystem.draw(
                 0,
                 false,
-                0.0f
+                0.0f,
+                enemySystem.getScore()
             );
         } else if (state == State::GameOver) {
             if (rPressed) {
@@ -286,7 +288,7 @@ void Game::run() {
 
             particleSystem.update(deltaTime);
             drawScene(false);
-            hudSystem.drawGameOverScreen();
+            hudSystem.drawGameOverScreen(enemySystem.getScore());
         } else if (state == State::Won) {
             if (rPressed) {
                 resetGame();
@@ -295,7 +297,7 @@ void Game::run() {
 
             particleSystem.update(deltaTime);
             drawScene(true);
-            hudSystem.drawWinScreen();
+            hudSystem.drawWinScreen(enemySystem.getScore());
         }
 
         glfwSwapBuffers(window);

@@ -30,6 +30,7 @@ public:
     bool playerHit(float playerX, float playerZ);
     bool allDead()   const;
     int  aliveCount() const;
+    int  getScore()  const;
 
 private:
     static constexpr int   COLS        = 11;
@@ -72,6 +73,7 @@ private:
     std::vector<Enemy>       enemies;
     std::vector<EnemyBullet> enemyBullets;
 
+    int   score       = 0;
     float gridOffsetX = 0.0f;
     float dirX        = 1.0f;
     float totalTime   = 0.0f;
