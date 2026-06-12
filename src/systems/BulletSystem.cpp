@@ -290,7 +290,7 @@ void BulletSystem::clear() {
 }
 
 void BulletSystem::activateFastBullets(float duration) {
-    bulletSpeed = 35.0f;
+    bulletSpeed = 30.0f;
     fastBulletTimer = duration;
 }
 

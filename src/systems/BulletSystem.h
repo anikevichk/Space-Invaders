@@ -48,7 +48,7 @@ private:
 
     float shootCooldown = 0.0f;
 
-    float bulletSpeed = 22.0f;
-    float normalBulletSpeed = 22.0f;
+    float bulletSpeed = 16.0f;
+    float normalBulletSpeed = 16.0f;
     float fastBulletTimer = 0.0f;
 };

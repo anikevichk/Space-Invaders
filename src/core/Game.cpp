@@ -135,8 +135,8 @@ void Game::updatePlaying(float deltaTime) {
     player.updateInput(
         window,
         deltaTime,
-        camera.getPlayerMinX(),
-        camera.getPlayerMaxX()
+        -3.0f,
+        3.0f
     );
 
     glm::mat4 playerModel = player.getModelMatrix();
@@ -170,7 +170,8 @@ void Game::updatePlaying(float deltaTime) {
         std::cout << "Power-up: extra life, lives = " << lives << "\n";
     }
 
-    if (playerInvulnerabilityTimer <= 0.0f && enemySystem.playerHit(player.getX(), 0.0f)) {
+    glm::vec3 playerPos = glm::vec3(playerModel[3]);
+    if (playerInvulnerabilityTimer <= 0.0f && enemySystem.playerHit(playerPos.x, playerPos.z)) {
         lives--;
 
         std::cout << "Player hit, lives = " << lives << "\n";
@@ -261,7 +262,8 @@ void Game::run() {
             hudSystem.draw(
                 lives,
                 bulletSystem.isFastBulletsActive(),
-                bulletSystem.getFastBulletsTimeLeft()
+                bulletSystem.getFastBulletsTimeLeft(),
+                enemySystem.getScore()
             );
         } else if (state == State::PlayerDying) {
             stateTimer -= deltaTime;
@@ -276,7 +278,8 @@ void Game::run() {
             hudSystem.draw(
                 0,
                 false,
-                0.0f
+                0.0f,
+                enemySystem.getScore()
             );
         } else if (state == State::GameOver) {
             if (rPressed) {
@@ -286,7 +289,7 @@ void Game::run() {
 
             particleSystem.update(deltaTime);
             drawScene(false);
-            hudSystem.drawGameOverScreen();
+            hudSystem.drawGameOverScreen(enemySystem.getScore());
         } else if (state == State::Won) {
             if (rPressed) {
                 resetGame();
@@ -295,7 +298,7 @@ void Game::run() {
 
             particleSystem.update(deltaTime);
             drawScene(true);
-            hudSystem.drawWinScreen();
+            hudSystem.drawWinScreen(enemySystem.getScore());
         }
 
         glfwSwapBuffers(window);

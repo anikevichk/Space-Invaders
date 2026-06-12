@@ -213,7 +213,8 @@ void HudSystem::drawHeartPx(
 void HudSystem::draw(
     int lives,
     bool fastBulletsActive,
-    float fastBulletsTimeLeft
+    float fastBulletsTimeLeft,
+    int score
 ) {
     glDisable(GL_DEPTH_TEST);
 
@@ -228,6 +229,16 @@ void HudSystem::draw(
         float x = 18.0f + i * (heartSize + heartGap);
         drawHeartPx(x, 18.0f, heartSize);
     }
+
+    const float minSide = static_cast<float>(std::min(screenWidth, screenHeight));
+    const float scorePixel = std::max(2.6f, std::min(minSide * 0.0046f, 4.0f));
+    drawCenteredTextPx(
+        "SCORE " + std::to_string(score),
+        static_cast<float>(screenWidth) * 0.5f,
+        18.0f,
+        scorePixel,
+        0.85f, 0.93f, 1.0f, 1.0f
+    );
 
     // Fast bullets bar in top-right corner
     if (fastBulletsActive) {
@@ -301,7 +312,17 @@ static bool glyphPixel(char c, int row, int col) {
     static const char* X[7] = {"10001", "10001", "01010", "00100", "01010", "10001", "10001"};
     static const char* Z[7] = {"11111", "00001", "00010", "00100", "01000", "10000", "11111"};
     static const char* DASH[7] = {"00000", "00000", "00000", "11111", "00000", "00000", "00000"};
+    static const char* COLON[7] = {"00000", "00100", "00000", "00000", "00000", "00100", "00000"};
+    static const char* ZERO[7]  = {"01110", "10001", "10011", "10101", "11001", "10001", "01110"};
+    static const char* ONE[7]   = {"00100", "01100", "00100", "00100", "00100", "00100", "01110"};
+    static const char* TWO[7]   = {"01110", "10001", "00001", "00010", "00100", "01000", "11111"};
     static const char* THREE[7] = {"11110", "00001", "00001", "01110", "00001", "00001", "11110"};
+    static const char* FOUR[7]  = {"00010", "00110", "01010", "10010", "11111", "00010", "00010"};
+    static const char* FIVE[7]  = {"11111", "10000", "11110", "00001", "00001", "10001", "01110"};
+    static const char* SIX[7]   = {"00110", "01000", "10000", "11110", "10001", "10001", "01110"};
+    static const char* SEVEN[7] = {"11111", "00001", "00010", "00100", "01000", "01000", "01000"};
+    static const char* EIGHT[7] = {"01110", "10001", "10001", "01110", "10001", "10001", "01110"};
+    static const char* NINE[7]  = {"01110", "10001", "10001", "01111", "00001", "00010", "01100"};
 
     const char** pattern = SPACE;
 
@@ -332,7 +353,17 @@ static bool glyphPixel(char c, int row, int col) {
         case 'Y': pattern = Y; break;
         case 'Z': pattern = Z; break;
         case '-': pattern = DASH; break;
+        case ':': pattern = COLON; break;
+        case '0': pattern = ZERO; break;
+        case '1': pattern = ONE; break;
+        case '2': pattern = TWO; break;
         case '3': pattern = THREE; break;
+        case '4': pattern = FOUR; break;
+        case '5': pattern = FIVE; break;
+        case '6': pattern = SIX; break;
+        case '7': pattern = SEVEN; break;
+        case '8': pattern = EIGHT; break;
+        case '9': pattern = NINE; break;
         default: pattern = SPACE; break;
     }
 
@@ -446,7 +477,8 @@ void HudSystem::drawOverlay(
     float titleR,
     float titleG,
     float titleB,
-    const std::string& subtitle
+    const std::string& subtitle,
+    int score
 ) {
     glDisable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
@@ -457,9 +489,9 @@ void HudSystem::drawOverlay(
     const float centerY = static_cast<float>(screenHeight) * 0.43f;
 
     float panelW = std::min(static_cast<float>(screenWidth) * 0.72f, minSide * 1.15f);
-    float panelH = std::min(static_cast<float>(screenHeight) * 0.30f, minSide * 0.32f);
+    float panelH = std::min(static_cast<float>(screenHeight) * 0.40f, minSide * 0.42f);
     panelW = std::max(panelW, 420.0f);
-    panelH = std::max(panelH, 150.0f);
+    panelH = std::max(panelH, 200.0f);
 
     float panelX = centerX - panelW * 0.5f;
     float panelY = centerY - panelH * 0.5f;
@@ -481,9 +513,10 @@ void HudSystem::drawOverlay(
     drawRectPx(panelX, panelY, panelW, 4.0f, titleR, titleG, titleB, 0.95f);
     drawRectPx(panelX, panelY + panelH - 4.0f, panelW, 4.0f, titleR, titleG, titleB, 0.95f);
 
-    drawCenteredTextPx(title, centerX, panelY + panelH * 0.33f, titleScale, titleR, titleG, titleB, 1.0f);
-    drawCenteredTextPx(subtitle, centerX, panelY + panelH * 0.65f, subScale, 0.86f, 0.93f, 1.0f, 1.0f);
-    drawCenteredTextPx("ESC - QUIT", centerX, panelY + panelH * 0.82f, hintScale, 0.55f, 0.65f, 0.78f, 1.0f);
+    drawCenteredTextPx(title, centerX, panelY + panelH * 0.20f, titleScale, titleR, titleG, titleB, 1.0f);
+    drawCenteredTextPx("SCORE " + std::to_string(score), centerX, panelY + panelH * 0.44f, subScale, 1.0f, 0.92f, 0.45f, 1.0f);
+    drawCenteredTextPx(subtitle, centerX, panelY + panelH * 0.62f, hintScale, 0.86f, 0.93f, 1.0f, 1.0f);
+    drawCenteredTextPx("ESC - QUIT", centerX, panelY + panelH * 0.78f, hintScale, 0.55f, 0.65f, 0.78f, 1.0f);
 
     glDisable(GL_BLEND);
     glEnable(GL_DEPTH_TEST);
@@ -524,12 +557,12 @@ void HudSystem::drawStartScreen() {
     glEnable(GL_DEPTH_TEST);
 }
 
-void HudSystem::drawGameOverScreen() {
-    drawOverlay("GAME OVER", 1.0f, 0.18f, 0.18f, "PRESS R");
+void HudSystem::drawGameOverScreen(int score) {
+    drawOverlay("GAME OVER", 1.0f, 0.18f, 0.18f, "PRESS R", score);
 }
 
-void HudSystem::drawWinScreen() {
-    drawOverlay("YOU WIN", 0.25f, 1.0f, 0.35f, "PRESS R");
+void HudSystem::drawWinScreen(int score) {
+    drawOverlay("YOU WIN", 0.25f, 1.0f, 0.35f, "PRESS R", score);
 }
 
 void HudSystem::cleanup() {

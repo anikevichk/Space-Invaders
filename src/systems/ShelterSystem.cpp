@@ -141,12 +141,11 @@ bool ShelterSystem::bulletHitsBlock(
     const glm::vec3& bulletPosition,
     const Block& block
 ) const {
-    float minX = block.position.x - block.scale.x * 0.5f - 0.08f;
-    float maxX = block.position.x + block.scale.x * 0.5f + 0.08f;
+    float minX = block.position.x - block.scale.x * 0.5f - 0.02f;
+    float maxX = block.position.x + block.scale.x * 0.5f + 0.02f;
 
-    float minZ = block.position.z - block.scale.z * 0.5f - 0.18f;
-    float maxZ = block.position.z + block.scale.z * 0.5f + 0.18f;
-
+    float minZ = block.position.z - block.scale.z * 0.5f - 0.03f;
+    float maxZ = block.position.z + block.scale.z * 0.5f + 0.03f;
     return bulletPosition.x >= minX &&
            bulletPosition.x <= maxX &&
            bulletPosition.z >= minZ &&
