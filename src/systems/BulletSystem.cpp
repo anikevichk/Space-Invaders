@@ -123,8 +123,8 @@ void BulletSystem::update(
             continue;
         }
 
-        glm::vec3 bulletStart = bullet.prevPosition;
-        glm::vec3 bulletEnd = bullet.position;
+        glm::vec3 bulletStart = bullet.prevPosition + bullet.direction * 0.45f;
+        glm::vec3 bulletEnd = bullet.position + bullet.direction * 0.45f;
 
         bool hitShelter =
             shelterSystem &&

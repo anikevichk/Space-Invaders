@@ -193,13 +193,26 @@ glm::vec3 EnemySystem::enemyWorldPos(const Enemy& e) const {
 }
 
 bool EnemySystem::bulletHitsEnemy(const glm::vec3& pt, int idx) const {
-    static constexpr float ENEMY_HITBOX_X = 0.35f;
-    static constexpr float ENEMY_HITBOX_Z = 0.35f;
+    int row = idx / COLS;
+
+    int typeIdx = 0;
+    for (int t = 0; t < TYPE_COUNT; t++) {
+        if (row >= types[t].firstRow &&
+            row < types[t].firstRow + types[t].numRows) {
+            typeIdx = t;
+            break;
+            }
+    }
+
+    const EnemyType& type = types[typeIdx];
 
     glm::vec3 pos = enemyWorldPos(enemies[idx]);
 
-    return std::abs(pt.x - pos.x) <= ENEMY_HITBOX_X &&
-           std::abs(pt.z - pos.z) <= ENEMY_HITBOX_Z;
+    float hx = type.hitboxHX + 0.12f;
+    float hz = type.hitboxHZ + 0.12f;
+
+    return std::abs(pt.x - pos.x) <= hx &&
+           std::abs(pt.z - pos.z) <= hz;
 }
 
 void EnemySystem::shootFromRandom() {
