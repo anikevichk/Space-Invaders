@@ -8,10 +8,33 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <algorithm>
+#include <cmath>
 #include <ctime>
 #include <iostream>
 #include <limits>
 static constexpr float BULLET_RENDER_Y = -1.65f;
+
+// Camera is hardcoded in Camera::getViewMatrix().  The projectile is rendered on
+// a lower Y plane than the enemies, so a bullet that visually crosses an enemy
+// has different world-space Z than the enemy.  This helper maps a rendered
+// bullet point onto the enemy visual plane along the camera ray, making
+// collisions match what the player actually sees on screen.
+static const glm::vec3 CAMERA_EYE(0.0f, 2.0f, 7.0f);
+
+static glm::vec3 mapRenderedBulletPointToYPlane(
+    const glm::vec3& renderedPoint,
+    float targetY
+) {
+    const float denom = renderedPoint.y - CAMERA_EYE.y;
+
+    if (std::abs(denom) < 0.00001f) {
+        return renderedPoint;
+    }
+
+    const float t = (targetY - CAMERA_EYE.y) / denom;
+
+    return CAMERA_EYE + (renderedPoint - CAMERA_EYE) * t;
+}
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -98,15 +121,46 @@ bool EnemySystem::loadType(int idx,
     }
     t.meshVertexCount = static_cast<GLsizei>(verts.size());
 
-    // Compute world-space half-extents from actual vertex data
+    // Collision must use the same transform as rendering.
+    // The OBJ origins are not guaranteed to be in the visual center of the mesh.
+    // If we center the hitbox on enemyWorldPos only, shots near the outside columns
+    // can look correct on screen but miss the real hitbox.
     glm::vec3 vmin(std::numeric_limits<float>::max());
     glm::vec3 vmax(-std::numeric_limits<float>::max());
     for (const auto& v : verts) {
         vmin = glm::min(vmin, v.position);
         vmax = glm::max(vmax, v.position);
     }
-    t.hitboxHX = (vmax.x - vmin.x) * 0.5f * ENEMY_SCALE;
-    t.hitboxHZ = (vmax.z - vmin.z) * 0.5f * ENEMY_SCALE;
+
+    static const glm::mat4 ROT =
+        glm::rotate(glm::mat4(1.0f), glm::radians(10.0f), glm::vec3(1, 0, 0));
+    const glm::mat4 localToEnemy =
+        glm::scale(glm::mat4(1.0f), glm::vec3(ENEMY_SCALE)) * ROT;
+
+    glm::vec3 hitMin(std::numeric_limits<float>::max());
+    glm::vec3 hitMax(-std::numeric_limits<float>::max());
+
+    for (int x = 0; x < 2; ++x) {
+        for (int y = 0; y < 2; ++y) {
+            for (int z = 0; z < 2; ++z) {
+                glm::vec3 corner(
+                    x == 0 ? vmin.x : vmax.x,
+                    y == 0 ? vmin.y : vmax.y,
+                    z == 0 ? vmin.z : vmax.z
+                );
+
+                glm::vec3 transformed =
+                    glm::vec3(localToEnemy * glm::vec4(corner, 1.0f));
+
+                hitMin = glm::min(hitMin, transformed);
+                hitMax = glm::max(hitMax, transformed);
+            }
+        }
+    }
+
+    t.hitboxCenterOffset = (hitMin + hitMax) * 0.5f;
+    t.hitboxHX = (hitMax.x - hitMin.x) * 0.5f;
+    t.hitboxHZ = (hitMax.z - hitMin.z) * 0.5f;
 
     t.texture = loadTexture(texPath);
     if (!t.texture) {
@@ -201,18 +255,76 @@ bool EnemySystem::bulletHitsEnemy(const glm::vec3& pt, int idx) const {
             row < types[t].firstRow + types[t].numRows) {
             typeIdx = t;
             break;
-            }
+        }
     }
 
     const EnemyType& type = types[typeIdx];
-
-    glm::vec3 pos = enemyWorldPos(enemies[idx]);
+    glm::vec3 pos = enemyWorldPos(enemies[idx]) + type.hitboxCenterOffset;
 
     float hx = type.hitboxHX + 0.12f;
     float hz = type.hitboxHZ + 0.12f;
 
     return std::abs(pt.x - pos.x) <= hx &&
            std::abs(pt.z - pos.z) <= hz;
+}
+
+bool EnemySystem::bulletSegmentHitsEnemy(
+    const glm::vec3& start,
+    const glm::vec3& end,
+    int idx
+) const {
+    int row = idx / COLS;
+
+    int typeIdx = 0;
+    for (int t = 0; t < TYPE_COUNT; t++) {
+        if (row >= types[t].firstRow &&
+            row < types[t].firstRow + types[t].numRows) {
+            typeIdx = t;
+            break;
+        }
+    }
+
+    const EnemyType& type = types[typeIdx];
+    glm::vec3 pos = enemyWorldPos(enemies[idx]) + type.hitboxCenterOffset;
+
+    // Bullet positions are rendered at BULLET_RENDER_Y, while enemies are rendered
+    // around GRID_Y.  With a perspective camera this creates parallax: the same
+    // on-screen bullet point corresponds to a different world X/Z on the enemy
+    // plane.  Check collision using that on-screen equivalent, not the raw bullet
+    // X/Z, otherwise edge shots look like they pass through enemies.
+    const glm::vec3 mappedStart = mapRenderedBulletPointToYPlane(start, pos.y);
+    const glm::vec3 mappedEnd   = mapRenderedBulletPointToYPlane(end,   pos.y);
+
+    const float minX = pos.x - type.hitboxHX - 0.12f;
+    const float maxX = pos.x + type.hitboxHX + 0.12f;
+    const float minZ = pos.z - type.hitboxHZ - 0.12f;
+    const float maxZ = pos.z + type.hitboxHZ + 0.12f;
+
+    float tMin = 0.0f;
+    float tMax = 1.0f;
+
+    auto clipAxis = [&](float axisStart, float axisEnd, float axisMin, float axisMax) {
+        const float d = axisEnd - axisStart;
+
+        if (std::abs(d) < 0.00001f) {
+            return axisStart >= axisMin && axisStart <= axisMax;
+        }
+
+        float enter = (axisMin - axisStart) / d;
+        float exit  = (axisMax - axisStart) / d;
+
+        if (enter > exit) {
+            std::swap(enter, exit);
+        }
+
+        tMin = std::max(tMin, enter);
+        tMax = std::min(tMax, exit);
+
+        return tMin <= tMax;
+    };
+
+    return clipAxis(mappedStart.x, mappedEnd.x, minX, maxX) &&
+           clipAxis(mappedStart.z, mappedEnd.z, minZ, maxZ);
 }
 
 void EnemySystem::shootFromRandom() {
@@ -338,26 +450,31 @@ bool EnemySystem::hitByBullet(
     const glm::vec3& bulletEnd,
     glm::vec3* killedEnemyPosition
 ) {
-    constexpr int STEPS = 12;
-
     for (int i = 0; i < static_cast<int>(enemies.size()); i++) {
         if (!enemies[i].alive) {
             continue;
         }
 
-        for (int s = 0; s <= STEPS; s++) {
-            float t = static_cast<float>(s) / static_cast<float>(STEPS);
-            glm::vec3 pt = bulletStart + (bulletEnd - bulletStart) * t;
+        if (bulletSegmentHitsEnemy(bulletStart, bulletEnd, i)) {
+            int row = i / COLS;
+            int typeIdx = 0;
 
-            if (bulletHitsEnemy(pt, i)) {
-                if (killedEnemyPosition != nullptr) {
-                    *killedEnemyPosition = enemyWorldPos(enemies[i]);
+            for (int t = 0; t < TYPE_COUNT; t++) {
+                if (row >= types[t].firstRow &&
+                    row < types[t].firstRow + types[t].numRows) {
+                    typeIdx = t;
+                    break;
                 }
-
-                enemies[i].alive = false;
-                score += pointsForRow(i / COLS);
-                return true;
             }
+
+            if (killedEnemyPosition != nullptr) {
+                *killedEnemyPosition =
+                    enemyWorldPos(enemies[i]) + types[typeIdx].hitboxCenterOffset;
+            }
+
+            enemies[i].alive = false;
+            score += pointsForRow(row);
+            return true;
         }
     }
 

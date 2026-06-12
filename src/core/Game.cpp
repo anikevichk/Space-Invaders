@@ -135,8 +135,8 @@ void Game::updatePlaying(float deltaTime) {
     player.updateInput(
         window,
         deltaTime,
-        -3.0f,
-        3.0f
+        camera.getPlayerMinX(),
+        camera.getPlayerMaxX()
     );
 
     glm::mat4 playerModel = player.getModelMatrix();

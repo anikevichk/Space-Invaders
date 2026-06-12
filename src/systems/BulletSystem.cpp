@@ -160,7 +160,7 @@ void BulletSystem::update(
             bullet.position.x > 10.0f ||
             bullet.position.y < -10.0f ||
             bullet.position.y > 10.0f ||
-            bullet.position.z < -15.0f ||
+            bullet.position.z < -25.0f ||
             bullet.position.z > 15.0f;
 
         if (hitShelter || hitEnemy || outOfBounds) {

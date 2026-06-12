@@ -59,9 +59,10 @@ private:
         GLsizei     meshVertexCount = 0;
         int         firstRow        = 0;
         int         numRows         = 0;
-        glm::vec3   emissiveTint    = glm::vec3(0.0f);
-        float       hitboxHX        = 0.0f;  // world-space half-extents after scale
-        float       hitboxHZ        = 0.0f;
+        glm::vec3   emissiveTint       = glm::vec3(0.0f);
+        glm::vec3   hitboxCenterOffset = glm::vec3(0.0f); // same local bbox transform as rendered mesh
+        float       hitboxHX           = 0.0f;             // world-space half-extents after scale/rotation
+        float       hitboxHZ           = 0.0f;
     };
 
     std::array<EnemyType, TYPE_COUNT> types;
@@ -90,7 +91,10 @@ private:
 
     float     currentSpeed()                                   const;
     glm::vec3 enemyWorldPos(const Enemy& e)                    const;
-    bool      bulletHitsEnemy(const glm::vec3& pt, int idx)   const;
+    bool      bulletHitsEnemy(const glm::vec3& pt, int idx)                 const;
+    bool      bulletSegmentHitsEnemy(const glm::vec3& start,
+                                     const glm::vec3& end,
+                                     int idx)                                  const;
     void      shootFromRandom();
     void      buildGrid();
 };
