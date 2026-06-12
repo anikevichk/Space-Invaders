@@ -135,8 +135,8 @@ void Game::updatePlaying(float deltaTime) {
     player.updateInput(
         window,
         deltaTime,
-        camera.getPlayerMinX(),
-        camera.getPlayerMaxX()
+        -3.0f,
+        3.0f
     );
 
     glm::mat4 playerModel = player.getModelMatrix();
@@ -170,7 +170,8 @@ void Game::updatePlaying(float deltaTime) {
         std::cout << "Power-up: extra life, lives = " << lives << "\n";
     }
 
-    if (playerInvulnerabilityTimer <= 0.0f && enemySystem.playerHit(player.getX(), 0.0f)) {
+    glm::vec3 playerPos = glm::vec3(playerModel[3]);
+    if (playerInvulnerabilityTimer <= 0.0f && enemySystem.playerHit(playerPos.x, playerPos.z)) {
         lives--;
 
         std::cout << "Player hit, lives = " << lives << "\n";

@@ -240,7 +240,13 @@ void EnemySystem::shootFromRandom() {
     glm::vec3 enemyPos = enemyWorldPos(enemies[idx]);
 
     EnemyBullet b;
-    b.position = glm::vec3(enemyPos.x, BULLET_RENDER_Y, enemyPos.z + 0.25f);
+
+    b.position = glm::vec3(
+        enemyPos.x,
+        BULLET_RENDER_Y,
+        enemyPos.z - 4.45f
+    );
+
     b.prevPosition = b.position;
     b.velocity = glm::vec3(0.0f, 0.0f, BULLET_SPEED);
 
@@ -305,7 +311,7 @@ void EnemySystem::update(float deltaTime, float minBoundaryX, float maxBoundaryX
 
                 bool hitShelter =
                     shelterSystem != nullptr &&
-                    shelterSystem->hitByBullet(b.prevPosition, b.position);
+                    shelterSystem->hitByBullet(b.position, b.position);
 
                 return outOfBounds || hitShelter;
             }
@@ -348,7 +354,6 @@ bool EnemySystem::hitByBullet(
 bool EnemySystem::playerHit(float playerX, float playerZ) {
     static constexpr float PLAYER_HITBOX_X = 0.75f;
     static constexpr float PLAYER_HITBOX_Z = 0.35f;
-    static constexpr int STEPS = 8;
 
     bool hit = false;
 
@@ -357,18 +362,13 @@ bool EnemySystem::playerHit(float playerX, float playerZ) {
             enemyBullets.begin(),
             enemyBullets.end(),
             [&](const EnemyBullet& b) {
-                for (int i = 0; i <= STEPS; i++) {
-                    float t = static_cast<float>(i) / static_cast<float>(STEPS);
-                    glm::vec3 point = b.prevPosition + (b.position - b.prevPosition) * t;
+                bool bulletHitsPlayer =
+                    std::abs(b.position.x - playerX) <= PLAYER_HITBOX_X &&
+                    std::abs(b.position.z - playerZ) <= PLAYER_HITBOX_Z;
 
-                    bool bulletHitsPlayer =
-                        std::abs(point.x - playerX) <= PLAYER_HITBOX_X &&
-                        std::abs(point.z - playerZ) <= PLAYER_HITBOX_Z;
-
-                    if (bulletHitsPlayer) {
-                        hit = true;
-                        return true;
-                    }
+                if (bulletHitsPlayer) {
+                    hit = true;
+                    return true;
                 }
 
                 return false;
