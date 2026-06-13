@@ -4,6 +4,21 @@
 #include <iostream>
 #include "Shader.h"
 
+static std::string formatScore(int score) {
+    if (score < 0) {
+        score = 0;
+    }
+
+    std::string digits = std::to_string(score);
+    const size_t width = 3;
+
+    if (digits.size() < width) {
+        digits.insert(0, width - digits.size(), ' ');
+    }
+
+    return "SCORE " + digits;
+}
+
 bool HudSystem::init() {
     shader = createShaderProgram(
         "shaders/hud.vert",
@@ -233,7 +248,7 @@ void HudSystem::draw(
     const float minSide = static_cast<float>(std::min(screenWidth, screenHeight));
     const float scorePixel = std::max(2.6f, std::min(minSide * 0.0046f, 4.0f));
     drawCenteredTextPx(
-        "SCORE " + std::to_string(score),
+        formatScore(score),
         static_cast<float>(screenWidth) * 0.5f,
         18.0f,
         scorePixel,
@@ -514,7 +529,7 @@ void HudSystem::drawOverlay(
     drawRectPx(panelX, panelY + panelH - 4.0f, panelW, 4.0f, titleR, titleG, titleB, 0.95f);
 
     drawCenteredTextPx(title, centerX, panelY + panelH * 0.20f, titleScale, titleR, titleG, titleB, 1.0f);
-    drawCenteredTextPx("SCORE " + std::to_string(score), centerX, panelY + panelH * 0.44f, subScale, 1.0f, 0.92f, 0.45f, 1.0f);
+    drawCenteredTextPx(formatScore(score), centerX, panelY + panelH * 0.44f, subScale, 1.0f, 0.92f, 0.45f, 1.0f);
     drawCenteredTextPx(subtitle, centerX, panelY + panelH * 0.62f, hintScale, 0.86f, 0.93f, 1.0f, 1.0f);
     drawCenteredTextPx("ESC - QUIT", centerX, panelY + panelH * 0.78f, hintScale, 0.55f, 0.65f, 0.78f, 1.0f);
 
